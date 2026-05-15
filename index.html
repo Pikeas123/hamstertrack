@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HamsterTrack">
+<meta name="theme-color" content="#0a0a0f">
+<title>HamsterTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--s1:#13131a;--s2:#1c1c26;--s3:#252530;--brd:rgba(255,255,255,0.06);--o:#ff5c1a;--a:#ffaa00;--g:#00e87a;--b:#4da6ff;--p:#c97bff;--tx:#eeeef5;--mu:#55556a;--st:env(safe-area-inset-top,44px);--sb:env(safe-area-inset-bottom,34px);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--tx);font-family:'DM Mono',monospace;display:flex;flex-direction:column;height:100%;}
+.st{height:var(--st);background:var(--bg);flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 8px;flex-shrink:0;}
+.brand{font-family:'Syne',sans-serif;font-weight:900;font-size:1.05rem;letter-spacing:-.01em;}
+.brand em{color:var(--o);font-style:normal;}
+.chip{display:flex;align-items:center;gap:6px;padding:4px 11px;border-radius:100px;font-size:.6rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;}
+.cl{background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.2);color:var(--g);}
+.co{background:rgba(255,92,26,.1);border:1px solid rgba(255,92,26,.2);color:var(--o);}
+.dot{width:5px;height:5px;border-radius:50%;animation:blink 2s ease-in-out infinite;}
+.dg{background:var(--g);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px;padding-bottom:calc(72px + var(--sb));}
+.page{display:none;animation:fu .35s ease both;}
+.page.on{display:block;}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ring-wrap{display:flex;flex-direction:column;align-items:center;padding:14px 0 18px;}
+.ring-rel{position:relative;width:190px;height:190px;}
+.ring-svg{width:190px;height:190px;transform:rotate(-90deg);}
+.rb{fill:none;stroke:var(--s3);stroke-width:14;}
+.rf{fill:none;stroke:url(#rg);stroke-width:14;stroke-linecap:round;stroke-dasharray:534;stroke-dashoffset:534;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1);}
+.rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
+.re{font-size:1.5rem;}
+.rv{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:900;line-height:1;letter-spacing:-.04em;background:linear-gradient(135deg,var(--o),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ru{font-size:.6rem;color:var(--mu);letter-spacing:.15em;text-transform:uppercase;}
+.rs{font-size:.72rem;color:var(--mu);margin-top:8px;letter-spacing:.04em;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px;}
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:16px;padding:15px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:16px 16px 0 0;}
+.co2::before{background:linear-gradient(90deg,var(--o),var(--a));}
+.cb::before{background:linear-gradient(90deg,var(--b),#a0d4ff);}
+.cg::before{background:linear-gradient(90deg,var(--g),#80ffbd);}
+.cp::before{background:linear-gradient(90deg,var(--p),#e0adff);}
+.clb{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mu);margin-bottom:5px;font-weight:500;}
+.cv{font-family:'Syne',sans-serif;font-size:1.85rem;font-weight:900;letter-spacing:-.03em;line-height:1;}
+.csub{font-size:.6rem;color:var(--mu);margin-top:3px;}
+.ci{position:absolute;top:13px;right:13px;font-size:1.2rem;opacity:.4;}
+.tot{background:linear-gradient(135deg,#1a0e06,#1f1408);border:1px solid rgba(255,170,0,.15);}
+.tot .cv{font-size:2.4rem;color:var(--a);}
+.wcard{background:var(--s1);border:1px solid var(--brd);border-radius:16px;padding:16px;margin-bottom:9px;}
+.wh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.wt{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mu);font-weight:500;}
+.mc{height:64px;display:flex;align-items:flex-end;gap:4px;}
+.mbw{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;}
+.mb{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .7s ease;}
+.mbn{background:linear-gradient(to top,var(--o),var(--a));}
+.mbo{background:var(--s3);}
+.mt{font-size:.48rem;color:var(--mu);}
+.lr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--brd);}
+.lr:last-child{border-bottom:none;}
+.li{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.lir{background:rgba(255,92,26,.12);}
+.lirest{background:rgba(0,232,122,.09);}
+.lis{background:rgba(255,255,255,.05);}
+.lt{flex:1;}
+.lm{font-size:.8rem;}
+.ltime{font-size:.6rem;color:var(--mu);margin-top:1px;}
+.er{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--brd);font-size:.75rem;}
+.er:last-child{border-bottom:none;}
+.ek{color:var(--mu);}
+.eok{color:var(--g);}
+.ewarn{color:var(--a);}
+.ph{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:900;letter-spacing:-.03em;margin:8px 0 16px;}
+.hc-bars{display:flex;align-items:flex-end;gap:3px;height:120px;margin-bottom:6px;}
+.hbw{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;cursor:pointer;}
+.hb{width:100%;border-radius:4px 4px 0 0;min-height:2px;transition:all .5s ease;}
+.hbt{background:linear-gradient(to top,var(--o),var(--a));}
+.hbp{background:var(--s3);}
+.hbp:hover,.hbp.sel{background:linear-gradient(to top,var(--b),#90c8ff);}
+.hbl{font-size:.45rem;color:var(--mu);white-space:nowrap;}
+.hleg{display:flex;justify-content:space-between;font-size:.58rem;color:var(--mu);}
+.dd{background:var(--s1);border:1px solid var(--brd);border-radius:16px;padding:16px;margin-bottom:12px;}
+.ddd{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:10px;}
+.ddg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.dds .dl{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-bottom:3px;}
+.dds .dv{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:900;letter-spacing:-.03em;}
+.hlr{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--brd);border-radius:12px;margin-bottom:7px;cursor:pointer;transition:all .2s;}
+.hlr:hover,.hlr.sel{border-color:rgba(255,92,26,.3);background:rgba(255,92,26,.04);}
+.hlrank{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;color:var(--mu);width:22px;flex-shrink:0;}
+.hld{flex:1;}
+.hldd{font-size:.82rem;font-weight:500;}
+.hlsub{font-size:.6rem;color:var(--mu);margin-top:1px;}
+.hlkm{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:900;color:var(--a);}
+.hlkm span{font-size:.6rem;font-family:'DM Mono',monospace;color:var(--mu);}
+.recc{background:var(--s1);border:1px solid var(--brd);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:9px;}
+.recm{font-size:2rem;}
+.reci h3{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;margin-bottom:2px;}
+.reci p{font-size:.65rem;color:var(--mu);}
+.recn{margin-left:auto;text-align:right;}
+.rn{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:900;color:var(--a);letter-spacing:-.03em;}
+.rnu{font-size:.55rem;color:var(--mu);letter-spacing:.1em;text-transform:uppercase;}
+.stit{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mu);margin-bottom:8px;padding:0 2px;}
+.scard{background:var(--s1);border:1px solid var(--brd);border-radius:16px;overflow:hidden;margin-bottom:16px;}
+.srow{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid var(--brd);}
+.srow:last-child{border-bottom:none;}
+.sico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.stxt{flex:1;}
+.sn{font-size:.82rem;font-weight:500;}
+.sd{font-size:.65rem;color:var(--mu);margin-top:1px;}
+input[type=range]{accent-color:var(--o);width:80px;}
+.sv{font-size:.72rem;font-weight:500;color:var(--o);min-width:34px;text-align:right;}
+.tgl{position:relative;width:42px;height:24px;}
+.tgl input{display:none;}
+.tr{position:absolute;inset:0;background:var(--s3);border-radius:12px;cursor:pointer;border:1px solid var(--brd);transition:background .3s;}
+.tt{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--mu);border-radius:50%;transition:all .3s;pointer-events:none;}
+.tgl input:checked~.tr{background:var(--o);border-color:var(--o);}
+.tgl input:checked~.tr .tt{left:21px;background:#fff;}
+.ip-row input[type=text]{background:var(--s2);border:1px solid var(--brd);color:var(--tx);font-family:'DM Mono',monospace;font-size:.75rem;padding:5px 9px;border-radius:8px;width:150px;outline:none;}
+.sbtn{background:linear-gradient(135deg,var(--o),var(--a));color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:.8rem;padding:12px;border:none;border-radius:12px;width:100%;cursor:pointer;margin-top:4px;letter-spacing:.02em;}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--brd);display:flex;padding-bottom:var(--sb);z-index:100;}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 0 5px;gap:3px;cursor:pointer;}
+.tbi{font-size:1.25rem;}
+.tbl{font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);font-weight:500;transition:color .2s;}
+.tb.on .tbl{color:var(--o);}
+.tb.on .tbi{filter:drop-shadow(0 0 5px rgba(255,92,26,.5));}
+</style>
+</head>
+<body>
+<div class="st"></div>
+<div class="nav">
+  <div class="brand">🐹 <em>Hamster</em>Track</div>
+  <div class="chip cl" id="chip"><div class="dot dg"></div>Live</div>
+</div>
+<div class="scroll" id="scr">
+
+<!-- LIVE -->
+<div class="page on" id="pg-live">
+<div class="ring-wrap">
+  <div class="ring-rel">
+    <svg class="ring-svg" viewBox="0 0 190 190">
+      <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ff5c1a"/><stop offset="100%" stop-color="#ffaa00"/></linearGradient></defs>
+      <circle cx="95" cy="95" r="85" class="rb"/>
+      <circle cx="95" cy="95" r="85" class="rf" id="sring"/>
+    </svg>
+    <div class="rc"><div class="re" id="re">💤</div><div class="rv" id="rv">0.0</div><div class="ru">km/h</div></div>
+  </div>
+  <div class="rs" id="rs">Hamster schläft…</div>
+</div>
+<div class="card tot" style="margin-bottom:9px;padding:18px;">
+  <div class="clb">⭐ Gesamtdistanz</div>
+  <div class="cv" id="totalKm">0.000</div>
+  <div class="csub">km seit Inbetriebnahme</div>
+</div>
+<div class="g2">
+  <div class="card co2"><div class="clb">Heute</div><div class="cv" id="todayKm">0.000</div><div class="csub">Kilometer</div><div class="ci">🏃</div></div>
+  <div class="card cb"><div class="clb">Max. RPM</div><div class="cv" id="rpm">0</div><div class="csub">Höchstwert heute</div><div class="ci">🔄</div></div>
+</div>
+<div class="g2">
+  <div class="card cg"><div class="clb">Läufe heute</div><div class="cv" id="runs">0</div><div class="csub">Pause &gt;2 min</div><div class="ci">📍</div></div>
+  <div class="card cp"><div class="clb">Aktivzeit</div><div class="cv" id="atime">0:00</div><div class="csub">h:mm aktiv</div><div class="ci">⏱</div></div>
+</div>
+<div class="wcard">
+  <div class="wh"><div class="wt">Letzte 8 Stunden</div><div class="chip co" style="font-size:.55rem;padding:3px 8px;border-radius:100px;letter-spacing:.1em;">Aktuell</div></div>
+  <div class="mc" id="hourChart"></div>
+</div>
+<div class="wcard">
+  <div class="wh"><div class="wt">Aktivitäts-Log</div></div>
+  <div id="logList"></div>
+</div>
+<div class="wcard">
+  <div class="wh"><div class="wt">ESP32 Status</div></div>
+  <div class="er"><span class="ek">WLAN</span><span class="eok">Verbunden</span></div>
+  <div class="er"><span class="ek">IP-Adresse</span><span id="ipSt">—</span></div>
+  <div class="er"><span class="ek">Uptime</span><span id="upSt">—</span></div>
+  <div class="er"><span class="ek">Letzte Antwort</span><span class="ewarn" id="lastSt">—</span></div>
+</div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="pg-history">
+<div class="ph">📅 Historie</div>
+<div class="wcard">
+  <div class="wh"><div class="wt">Tageskilometer</div><div style="font-size:.6rem;color:var(--mu)" id="hRange">—</div></div>
+  <div class="hc-bars" id="histBars"></div>
+  <div class="hleg"><span id="hcOld">—</span><span style="color:var(--o)">Heute</span></div>
+</div>
+<div class="dd" id="dayDetail">
+  <div class="ddd" id="ddDate">Balken antippen für Details</div>
+  <div class="ddg" id="ddGrid"></div>
+</div>
+<div id="histList"></div>
+</div>
+
+<!-- RECORDS -->
+<div class="page" id="pg-records">
+<div class="ph">🏆 Rekorde</div>
+<div class="recc"><div class="recm">🥇</div><div class="reci"><h3>Bester Tag</h3><p>Weiteste Strecke an einem Tag</p></div><div class="recn"><div class="rn" id="recBest">—</div><div class="rnu">km</div></div></div>
+<div class="recc"><div class="recm">⚡</div><div class="reci"><h3>Höchste Geschwindigkeit</h3><p>Allzeit-Rekord km/h</p></div><div class="recn"><div class="rn" id="recSpd">0.0</div><div class="rnu">km/h</div></div></div>
+<div class="recc"><div class="recm">🔄</div><div class="reci"><h3>Maximale RPM</h3><p>Umdrehungen pro Minute</p></div><div class="recn"><div class="rn" id="recRpm">0</div><div class="rnu">rpm</div></div></div>
+<div class="recc"><div class="recm">🌍</div><div class="reci"><h3>Gesamtdistanz</h3><p>Seit Inbetriebnahme</p></div><div class="recn"><div class="rn" id="recTot">0.00</div><div class="rnu">km</div></div></div>
+<div class="recc"><div class="recm">📅</div><div class="reci"><h3>Gespeicherte Tage</h3><p>Historien-Einträge total</p></div><div class="recn"><div class="rn" id="recDays">0</div><div class="rnu">Tage</div></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="pg-settings">
+<div class="ph" style="margin-top:4px;">⚙️ Einstellungen</div>
+<div class="stit">ESP32 Verbindung</div>
+<div class="scard">
+  <div class="srow ip-row">
+    <div class="sico" style="background:rgba(77,166,255,.12)">🌐</div>
+    <div class="stxt"><div class="sn">IP-Adresse ESP32</div><div class="sd">Im gleichen WLAN!</div></div>
+    <input type="text" id="apiInput" value="192.168.0.81">
+  </div>
+  <div class="srow">
+    <div class="sico" style="background:rgba(0,232,122,.1)">🔄</div>
+    <div class="stxt"><div class="sn">Update-Intervall</div><div class="sd">Sekunden zwischen Abfragen</div></div>
+    <input type="range" min="1" max="10" value="2" id="intSlider" oninput="document.getElementById('intVal').textContent=this.value+'s'">
+    <span class="sv" id="intVal">2s</span>
+  </div>
+</div>
+<div class="stit">Rad-Konfiguration</div>
+<div class="scard">
+  <div class="srow">
+    <div class="sico" style="background:rgba(255,92,26,.12)">📏</div>
+    <div class="stxt"><div class="sn">Raddurchmesser</div><div class="sd">Hamsterrad ausmessen</div></div>
+    <input type="range" min="10" max="35" value="20" id="diamSlider" oninput="document.getElementById('diamVal').textContent=this.value+'cm'">
+    <span class="sv" id="diamVal">20cm</span>
+  </div>
+  <div class="srow">
+    <div class="sico" style="background:rgba(201,123,255,.12)">🧲</div>
+    <div class="stxt"><div class="sn">Magnete am Rad</div><div class="sd">Anzahl Reed-Auslöser</div></div>
+    <input type="range" min="1" max="4" value="1" id="magSlider" oninput="document.getElementById('magVal').textContent=this.value">
+    <span class="sv" id="magVal">1</span>
+  </div>
+</div>
+<div class="stit">Benachrichtigungen</div>
+<div class="scard">
+  <div class="srow">
+    <div class="sico" style="background:rgba(0,232,122,.1)">🏃</div>
+    <div class="stxt"><div class="sn">Lauf-Start</div><div class="sd">Push wenn Hamster losläuft</div></div>
+    <label class="tgl"><input type="checkbox" checked><div class="tr"><div class="tt"></div></div></label>
+  </div>
+  <div class="srow">
+    <div class="sico" style="background:rgba(255,170,0,.12)">🏆</div>
+    <div class="stxt"><div class="sn">Neuer Rekord</div><div class="sd">Push bei Höchstwert</div></div>
+    <label class="tgl"><input type="checkbox" checked><div class="tr"><div class="tt"></div></div></label>
+  </div>
+  <div class="srow">
+    <div class="sico" style="background:rgba(77,166,255,.12)">📊</div>
+    <div class="stxt"><div class="sn">Tagesbericht</div><div class="sd">Täglich um 21:00</div></div>
+    <label class="tgl"><input type="checkbox"><div class="tr"><div class="tt"></div></div></label>
+  </div>
+</div>
+<div class="stit">Cloud-Verbindung (Supabase)</div>
+<div class="scard">
+  <div class="srow ip-row">
+    <div class="sico" style="background:rgba(34,211,160,.1)">☁️</div>
+    <div class="stxt"><div class="sn">Supabase Project URL</div><div class="sd">https://xxxxx.supabase.co</div></div>
+    <input type="text" id="supaUrl" placeholder="https://xxx.supabase.co" style="width:160px;">
+  </div>
+  <div class="srow ip-row">
+    <div class="sico" style="background:rgba(34,211,160,.1)">🔑</div>
+    <div class="stxt"><div class="sn">Supabase anon key</div><div class="sd">Aus Project Settings → API</div></div>
+    <input type="text" id="supaKey" placeholder="eyJhbGci..." style="width:160px;">
+  </div>
+  <div class="srow">
+    <div class="sico" style="background:rgba(34,211,160,.1)">🔀</div>
+    <div class="stxt"><div class="sn">Cloud-Modus aktiv</div><div class="sd">Unterwegs via Supabase</div></div>
+    <label class="tgl"><input type="checkbox" id="cloudToggle"><div class="tr"><div class="tt"></div></div></label>
+  </div>
+</div>
+<div id="cloudStatus" style="display:none;background:rgba(34,211,160,.07);border:1px solid rgba(34,211,160,.2);border-radius:12px;padding:12px 14px;font-size:.75rem;color:#99f6e4;margin-bottom:12px;font-family:'DM Mono',monospace;">
+  ☁️ Cloud-Modus aktiv · Unterwegs werden Daten von Supabase geladen
+</div>
+<button class="sbtn" onclick="saveSettings()">💾 Speichern & Verbinden</button>
+</div>
+
+</div><!-- scroll -->
+
+<div class="tab-bar">
+  <div class="tb on" onclick="goTab('live',this)"><div class="tbi">📡</div><div class="tbl">Live</div></div>
+  <div class="tb" onclick="goTab('history',this)"><div class="tbi">📅</div><div class="tbl">Historie</div></div>
+  <div class="tb" onclick="goTab('records',this)"><div class="tbi">🏆</div><div class="tbl">Rekorde</div></div>
+  <div class="tb" onclick="goTab('settings',this)"><div class="tbi">⚙️</div><div class="tbl">Einstellungen</div></div>
+</div>
+
+<script>
+const Q=s=>document.querySelector(s);
+const QQ=s=>document.querySelectorAll(s);
+
+const ST={
+  speed:0,rpm:0,todayKm:0,totalKm:0,activeSec:0,running:false,
+  runs:0,topSpeed:0,topRpm:0,uptime:0,ip:'192.168.0.81',
+  history:[],
+  hourly:[0.31,0.12,0.54,0.08,0.44,0.22,0.38,0],
+  logs:[
+    {t:'08:12',ico:'sys',m:'System gestartet'},
+    {t:'08:14',ico:'sys',m:'Reed-Sensor aktiv · GPIO4'},
+    {t:'09:20',ico:'run',m:'🐹 Läuft! 0.041 km'},
+    {t:'09:38',ico:'rest',m:'Pause · 18 min'},
+    {t:'10:05',ico:'run',m:'🐹 Läuft! 0.128 km'},
+  ],
+  apiBase:'http://192.168.0.81',
+  useReal:false,
+  // Cloud
+  supaUrl:'',
+  supaKey:'',
+  cloudEnabled:false,
+  cloudActive:false,   // true = gerade über Cloud verbunden
+};
+
+// ── Fake history data ─────────────────────────────────────
+function initFakeHistory(){
+  if(ST.history.length>0)return;
+  const dates=['2025-04-22','2025-04-21','2025-04-20','2025-04-19','2025-04-18',
+               '2025-04-17','2025-04-16','2025-04-15','2025-04-14','2025-04-13',
+               '2025-04-12','2025-04-11','2025-04-10','2025-04-09','2025-04-08',
+               '2025-04-07','2025-04-06','2025-04-05','2025-04-04','2025-04-03'];
+  const kms=[2.41,1.87,3.12,0.94,2.75,1.43,2.88,0.67,1.95,3.41,2.14,1.78,0.85,2.33,1.62,0.44,2.97,1.21,3.05,0.78];
+  ST.history=dates.map((d,i)=>({date:d,km:kms[i],runs:3+Math.floor(kms[i]*2)}));
+}
+
+// ── Kein Simulator mehr — nur echte Daten ────────────────
+// Letzte echte Werte im localStorage cachen
+function cacheRealData(){
+  try{
+    localStorage.setItem('ht_last_data', JSON.stringify({
+      speed:    ST.speed,
+      rpm:      ST.rpm,
+      todayKm:  ST.todayKm,
+      totalKm:  ST.totalKm,
+      runs:     ST.runs,
+      topSpeed: ST.topSpeed,
+      topRpm:   ST.topRpm,
+      activeSec:ST.activeSec,
+      history:  ST.history.slice(0,30),
+      cachedAt: new Date().toTimeString().slice(0,8),
+    }));
+  }catch(e){}
+}
+
+function loadCachedData(){
+  try{
+    const raw = localStorage.getItem('ht_last_data');
+    if(!raw) return false;
+    const d = JSON.parse(raw);
+    ST.speed=0; ST.rpm=0; ST.running=false; // Bewegungsdaten NIE aus Cache
+    ST.todayKm  = d.todayKm  || 0;
+    ST.totalKm  = d.totalKm  || 0;
+    ST.runs     = d.runs     || 0;
+    ST.topSpeed = d.topSpeed || 0;
+    ST.topRpm   = d.topRpm   || 0;
+    ST.activeSec= d.activeSec|| 0;
+    if(d.history && d.history.length) ST.history = d.history;
+    ST.cachedAt = d.cachedAt || '';
+    return true;
+  }catch(e){ return false; }
+}
+
+function addLog(ico,m){
+  const t=new Date().toTimeString().slice(0,5);
+  ST.logs.unshift({t,ico,m});
+  if(ST.logs.length>12)ST.logs.pop();
+}
+
+// ── Supabase Cloud Fetch ──────────────────────────────────
+async function fetchCloud(){
+  if(!ST.supaUrl||!ST.supaKey)return false;
+  try{
+    const hdrs={'apikey':ST.supaKey,'Authorization':'Bearer '+ST.supaKey};
+    const [lr,hr]=await Promise.all([
+      fetch(ST.supaUrl+'/rest/v1/live?id=eq.1&select=*',{headers:hdrs,signal:AbortSignal.timeout(4000)}),
+      fetch(ST.supaUrl+'/rest/v1/history?select=*&order=date.desc&limit=30',{headers:hdrs,signal:AbortSignal.timeout(4000)}),
+    ]);
+    if(!lr.ok)return false;
+    const la=await lr.json(),ha=await hr.json();
+    const l=la[0]; if(!l)return false;
+    ST.speed=l.speed||0;ST.rpm=l.rpm||0;ST.todayKm=l.today_km||0;
+    ST.totalKm=l.total_km||0;ST.running=l.running||false;
+    ST.runs=l.runs||0;ST.topSpeed=l.top_speed||0;ST.topRpm=l.top_rpm||0;
+    if(Array.isArray(ha)&&ha.length){
+      ST.history=ha.map(d=>({date:d.date,km:d.km||0,runs:d.runs||0}));
+      const today=new Date().toISOString().slice(0,10);
+      if(!ST.history.length||ST.history[0].date!==today)
+        ST.history.unshift({date:today,km:ST.todayKm,runs:ST.runs});
+    }
+    ST.cloudActive=true;ST.useReal=true;
+    setChip(true,'☁️ Cloud');cacheRealData();renderAll();
+    return true;
+  }catch(e){ST.cloudActive=false;return false;}
+}
+
+// ── Local ESP32 Fetch ─────────────────────────────────────
+async function fetchLocal(){
+  try{
+    const [lr,hr]=await Promise.all([
+      fetch(ST.apiBase+'/data',{signal:AbortSignal.timeout(2500)}),
+      fetch(ST.apiBase+'/history',{signal:AbortSignal.timeout(2500)}),
+    ]);
+    const l=await lr.json(),h=await hr.json();
+    ST.speed=l.speed||0;ST.rpm=l.rpm||0;ST.todayKm=l.today_km||0;
+    ST.totalKm=l.total_km||0;ST.activeSec=l.active_sec||0;
+    ST.running=l.running||false;ST.runs=l.runs_today||0;
+    ST.topSpeed=l.top_speed||0;ST.topRpm=l.top_rpm||0;
+    ST.uptime=l.uptime_sec||0;ST.ip=l.ip||ST.ip;
+    if(h.days)ST.history=h.days;
+    ST.cloudActive=false;ST.useReal=true;
+    setChip(true,'Live');cacheRealData();renderAll();
+    return true;
+  }catch(e){return false;}
+}
+
+// ── Smart Fetch: lokal zuerst, Cloud als Fallback ─────────
+let ftimer=null;
+async function fetchESP(){
+  const localOk=await fetchLocal();
+  if(localOk)return;
+  if(ST.cloudEnabled){
+    const cloudOk=await fetchCloud();
+    if(cloudOk)return;
+  }
+  // Nichts erreichbar → Offline-Modus mit letzten echten Werten
+  ST.useReal=false;ST.cloudActive=false;
+  ST.speed=0;ST.rpm=0;ST.running=false; // Bewegungsdaten immer auf 0
+  loadCachedData();
+  setChip(false,'Offline');
+  renderAll();
+}
+
+function setChip(ok,label='Live'){
+  const c=Q('#chip');
+  c.className='chip '+(ok?'cl':'co');
+  c.innerHTML=`<div class="dot ${ok?'dg':''}"></div>${ok?label:'Offline'}`;
+}
+function startFetch(){
+  const iv=parseInt(Q('#intSlider').value)*1000;
+  clearInterval(ftimer);
+  ftimer=setInterval(fetchESP,iv);
+  fetchESP();
+}
+
+// ── Render ────────────────────────────────────────────────
+function renderAll(){renderLive();renderHistory();renderRecords();}
+
+function renderLive(){
+  const offline = !ST.useReal;
+
+  // Ring — im Offline-Modus grau und leer
+  Q('#sring').style.strokeDashoffset = offline ? 534 : 534 - Math.min(1,ST.speed/5)*534;
+  Q('#sring').style.stroke = offline ? '#252530' : 'url(#rg)';
+  Q('#rv').textContent  = offline ? '—' : ST.speed.toFixed(1);
+  Q('#re').textContent  = offline ? '📵' : (ST.running ? '🐹' : '💤');
+  Q('#rs').textContent  = offline
+    ? (ST.cachedAt ? 'Zuletzt: ' + ST.cachedAt : 'Kein ESP32 erreichbar')
+    : (ST.running ? 'Läuft · '+ST.rpm+' RPM' : 'Hamster schläft…');
+
+  // Offline-Banner über die Karten
+  let banner = Q('#offlineBanner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'offlineBanner';
+    banner.style.cssText = 'display:none;background:rgba(255,92,26,.07);border:1px solid rgba(255,92,26,.2);border-radius:14px;padding:11px 14px;font-size:.75rem;color:#fed7aa;margin-bottom:9px;text-align:center;font-family:"DM Mono",monospace;';
+    Q('#totalKm').closest('.card').before(banner);
+  }
+  if(offline){
+    banner.style.display='block';
+    banner.textContent = ST.cachedAt
+      ? '📵 Offline · Letzte Daten von ' + ST.cachedAt
+      : '📵 Kein ESP32 erreichbar · Werte nicht verfügbar';
+  } else {
+    banner.style.display='none';
+  }
+
+  // Werte — im Offline-Modus gedimmt wenn kein Cache vorhanden
+  const noCache = offline && !ST.cachedAt;
+  Q('#totalKm').textContent = noCache ? '—' : ST.totalKm.toFixed(3);
+  Q('#todayKm').textContent = noCache ? '—' : ST.todayKm.toFixed(3);
+  Q('#rpm').textContent     = offline ? '—' : ST.topRpm;
+  Q('#runs').textContent    = noCache ? '—' : ST.runs;
+  const totalMin = Math.floor(ST.activeSec / 60);
+  const hh = Math.floor(totalMin / 60);
+  const mm = String(totalMin % 60).padStart(2,'0');
+  Q('#atime').textContent   = noCache ? '—' : `${hh}:${mm}`;
+
+  // Stundenchart
+  const max=Math.max(...ST.hourly,0.001);
+  const now=new Date();
+  Q('#hourChart').innerHTML=ST.hourly.map((v,i)=>{
+    const h=new Date(now-(7-i)*3600000);
+    const lbl=h.getHours().toString().padStart(2,'0');
+    const pct=Math.max(3,Math.round((v/max)*100));
+    return`<div class="mbw"><div class="mb ${i===7?'mbn':'mbo'}" style="height:${pct}%;${offline?'opacity:.35':''}"></div><div class="mt">${lbl}</div></div>`;
+  }).join('');
+
+  // Log
+  const ic={run:'🏃',rest:'💤',sys:'⚙️'};
+  const cc={run:'lir',rest:'lirest',sys:'lis'};
+  Q('#logList').innerHTML=ST.logs.slice(0,6).map(e=>`
+    <div class="lr">
+      <div class="li ${cc[e.ico]}">${ic[e.ico]}</div>
+      <div class="lt"><div class="lm">${e.m}</div><div class="ltime">${e.t} Uhr</div></div>
+    </div>`).join('');
+
+  // ESP Status
+  Q('#ipSt').textContent=ST.ip;
+  const u=ST.uptime;
+  Q('#upSt').textContent=offline?'—':String(Math.floor(u/3600)).padStart(2,'0')+':'+String(Math.floor(u%3600/60)).padStart(2,'0')+':'+String(u%60).padStart(2,'0');
+  Q('#lastSt').textContent=offline?(ST.cachedAt||'—'):new Date().toTimeString().slice(0,8);
+}
+
+let selDay=0;
+function renderHistory(){
+  const days=ST.history;
+  if(!days.length)return;
+  const max=Math.max(...days.map(d=>d.km),0.001);
+  const shown=days.slice(0,20).reverse();
+  if(days.length>1)Q('#hRange').textContent=days[days.length-1].date.slice(5)+' – '+days[0].date.slice(5);
+  Q('#histBars').innerHTML=shown.map((d,i)=>{
+    const idx=shown.length-1-i;
+    const isT=idx===0;
+    const pct=Math.max(3,Math.round((d.km/max)*100));
+    const lbl=d.date.slice(8);
+    return`<div class="hbw" onclick="selDay=${idx};renderHistory()">
+      <div class="hb ${isT?'hbt':'hbp'} ${idx===selDay&&!isT?'sel':''}" style="height:${pct}%"></div>
+      <div class="hbl">${lbl}</div></div>`;
+  }).join('');
+  Q('#hcOld').textContent=shown[0]?shown[0].date.slice(5):'';
+  const sd=days[selDay]||days[0];
+  if(sd){
+    const fmtDate=s=>{const d=new Date(s+'T12:00:00');return d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});};
+    Q('#ddDate').textContent=fmtDate(sd.date)+(selDay===0?' (Heute)':'');
+    const sorted=[...days].sort((a,b)=>b.km-a.km);
+    const rank=sorted.findIndex(d=>d.date===sd.date)+1;
+    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'#'+rank;
+    Q('#ddGrid').innerHTML=`
+      <div class="dds"><div class="dl">Distanz</div><div class="dv" style="color:var(--a)">${sd.km.toFixed(3)}<span style="font-size:.7rem;color:var(--mu)"> km</span></div></div>
+      <div class="dds"><div class="dl">Läufe</div><div class="dv">${sd.runs}</div></div>
+      <div class="dds"><div class="dl">Ø pro Lauf</div><div class="dv" style="font-size:1.2rem">${sd.runs>0?Math.round(sd.km/sd.runs*1000):0}<span style="font-size:.7rem;color:var(--mu)"> m</span></div></div>
+      <div class="dds"><div class="dl">Tages-Rang</div><div class="dv" style="font-size:1.3rem">${medal}</div></div>`;
+  }
+  const sorted=[...days].sort((a,b)=>b.km-a.km);
+  Q('#histList').innerHTML=sorted.slice(0,30).map((d,i)=>{
+    const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+    const fmtS=s=>{const dd=new Date(s+'T12:00:00');return dd.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});};
+    return`<div class="hlr" onclick="selDay=${days.findIndex(x=>x.date===d.date)};renderHistory()">
+      <div class="hlrank">${m}</div>
+      <div class="hld"><div class="hldd">${fmtS(d.date)}</div><div class="hlsub">${d.runs} Läufe</div></div>
+      <div class="hlkm">${d.km.toFixed(3)}<span> km</span></div></div>`;
+  }).join('');
+}
+
+function renderRecords(){
+  Q('#recSpd').textContent=ST.topSpeed.toFixed(1);
+  Q('#recRpm').textContent=ST.topRpm;
+  Q('#recTot').textContent=ST.totalKm.toFixed(2);
+  Q('#recDays').textContent=ST.history.length;
+  const best=ST.history.length?Math.max(...ST.history.map(d=>d.km)):0;
+  Q('#recBest').textContent=best.toFixed(3);
+}
+
+function goTab(id,el){
+  QQ('.page').forEach(p=>p.classList.remove('on'));
+  QQ('.tb').forEach(t=>t.classList.remove('on'));
+  Q('#pg-'+id).classList.add('on');
+  el.classList.add('on');
+  Q('#scr').scrollTop=0;
+}
+
+// ── localStorage Persistenz ───────────────────────────────
+function loadSettings(){
+  try{
+    const saved=localStorage.getItem('ht_settings');
+    if(saved){
+      const s=JSON.parse(saved);
+      if(s.apiIp){ST.apiBase='http://'+s.apiIp;Q('#apiInput').value=s.apiIp;}
+      if(s.diam){Q('#diamSlider').value=s.diam;Q('#diamVal').textContent=s.diam+'cm';}
+      if(s.mag){Q('#magSlider').value=s.mag;Q('#magVal').textContent=s.mag;}
+      if(s.interval){Q('#intSlider').value=s.interval;Q('#intVal').textContent=s.interval+'s';}
+      if(s.supaUrl){ST.supaUrl=s.supaUrl;Q('#supaUrl').value=s.supaUrl;}
+      if(s.supaKey){ST.supaKey=s.supaKey;Q('#supaKey').value=s.supaKey;}
+      if(s.cloudEnabled){
+        ST.cloudEnabled=true;
+        Q('#cloudToggle').checked=true;
+        Q('#cloudStatus').style.display='block';
+      }
+    }
+  }catch(e){}
+}
+
+function saveSettings(){
+  const ip=Q('#apiInput').value.trim();
+  const diam=Q('#diamSlider').value;
+  const mag=Q('#magSlider').value;
+  const interval=Q('#intSlider').value;
+  const supaUrl=Q('#supaUrl').value.trim().replace(/\/$/,'');
+  const supaKey=Q('#supaKey').value.trim();
+  const cloudEnabled=Q('#cloudToggle').checked;
+
+  ST.apiBase='http://'+ip;
+  ST.supaUrl=supaUrl;
+  ST.supaKey=supaKey;
+  ST.cloudEnabled=cloudEnabled;
+
+  Q('#cloudStatus').style.display=cloudEnabled?'block':'none';
+
+  try{
+    localStorage.setItem('ht_settings',JSON.stringify({
+      apiIp:ip,diam,mag,interval,supaUrl,supaKey,cloudEnabled
+    }));
+  }catch(e){}
+
+  const btn=document.querySelector('.sbtn');
+  const orig=btn.textContent;
+  btn.textContent='✓ Gespeichert!';
+  btn.style.background='linear-gradient(135deg,var(--g),#00c060)';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='';},2000);
+  startFetch();
+}
+
+// Einstellungen laden, gecachte Daten anzeigen, dann Fetch starten
+loadSettings();
+loadCachedData();   // sofort letzte echte Werte anzeigen
+startFetch();
+renderAll();
+</script>
+</body>
+</html>
