@@ -296,13 +296,9 @@ const ST={
   speed:0,rpm:0,todayKm:0,totalKm:0,activeSec:0,running:false,
   runs:0,topSpeed:0,topRpm:0,uptime:0,ip:'192.168.0.81',
   history:[],
-  hourly:[0.31,0.12,0.54,0.08,0.44,0.22,0.38,0],
+  hourly:[0,0,0,0,0,0,0,0],
   logs:[
-    {t:'08:12',ico:'sys',m:'System gestartet'},
-    {t:'08:14',ico:'sys',m:'Reed-Sensor aktiv · GPIO4'},
-    {t:'09:20',ico:'run',m:'🐹 Läuft! 0.041 km'},
-    {t:'09:38',ico:'rest',m:'Pause · 18 min'},
-    {t:'10:05',ico:'run',m:'🐹 Läuft! 0.128 km'},
+    {t:new Date().toTimeString().slice(0,5),ico:'sys',m:'App gestartet'},
   ],
   apiBase:'http://192.168.0.81',
   useReal:false,
@@ -325,6 +321,12 @@ function initFakeHistory(){
 }
 
 // ── Kein Simulator mehr — nur echte Daten ────────────────
+function addLog(ico,m){
+  const now=new Date();
+  const t=now.toTimeString().slice(0,5);
+  ST.logs.unshift({t,ico,m});
+  if(ST.logs.length>20)ST.logs.pop();
+}
 // Letzte echte Werte im localStorage cachen
 function cacheRealData(){
   try{
@@ -389,6 +391,10 @@ async function fetchCloud(){
         ST.history.unshift({date:today,km:ST.todayKm,runs:ST.runs});
     }
     ST.cloudActive=true;ST.useReal=true;
+    const wasRunning2 = ST.running;
+    ST.running=l.running||false;
+    if(ST.running && !wasRunning2) addLog('run','🐹 Läuft!');
+    else if(!ST.running && wasRunning2) addLog('rest',`Pause · ${ST.todayKm.toFixed(3)} km heute`);
     setChip(true,'☁️ Cloud');cacheRealData();renderAll();
     return true;
   }catch(e){ST.cloudActive=false;return false;}
@@ -408,7 +414,13 @@ async function fetchLocal(){
     ST.topSpeed=l.top_speed||0;ST.topRpm=l.top_rpm||0;
     ST.uptime=l.uptime_sec||0;ST.ip=l.ip||ST.ip;
     if(h.days)ST.history=h.days;
+    if(!ST.useReal) addLog('sys','✓ ESP32 verbunden · '+ST.ip);
     ST.cloudActive=false;ST.useReal=true;
+    // Log-Eintrag bei Statuswechsel
+    const wasRunning = ST.running;
+    ST.running=l.running||false;
+    if(ST.running && !wasRunning) addLog('run','🐹 Läuft!');
+    else if(!ST.running && wasRunning) addLog('rest',`Pause · ${ST.todayKm.toFixed(3)} km heute`);
     setChip(true,'Live');cacheRealData();renderAll();
     return true;
   }catch(e){return false;}
@@ -513,40 +525,63 @@ function renderLive(){
 }
 
 let selDay=0;
+
 function renderHistory(){
   const days=ST.history;
-  if(!days.length)return;
+  if(!days.length){
+    Q('#histBars').innerHTML='<div style="font-size:.75rem;color:var(--mu);padding:8px 0">Noch keine Historie vorhanden</div>';
+    Q('#histList').innerHTML='';
+    return;
+  }
   const max=Math.max(...days.map(d=>d.km),0.001);
-  const shown=days.slice(0,20).reverse();
+  // shown: älteste zuerst → neueste rechts (heute ganz rechts)
+  const shown=days.slice(0,20).slice().reverse();
   if(days.length>1)Q('#hRange').textContent=days[days.length-1].date.slice(5)+' – '+days[0].date.slice(5);
+
   Q('#histBars').innerHTML=shown.map((d,i)=>{
-    const idx=shown.length-1-i;
-    const isT=idx===0;
+    // Rückrechnung: shown[i] entspricht days-Index (shown.length-1-i)
+    const daysIdx=shown.length-1-i;
+    const isToday=daysIdx===0;
     const pct=Math.max(3,Math.round((d.km/max)*100));
     const lbl=d.date.slice(8);
-    return`<div class="hbw" onclick="selDay=${idx};renderHistory()">
-      <div class="hb ${isT?'hbt':'hbp'} ${idx===selDay&&!isT?'sel':''}" style="height:${pct}%"></div>
+    const isSel=selDay===daysIdx;
+    return`<div class="hbw" onclick="selDay=${daysIdx};renderHistory()">
+      <div class="hb ${isToday?'hbt':'hbp'} ${isSel&&!isToday?'sel':''}" style="height:${pct}%"></div>
       <div class="hbl">${lbl}</div></div>`;
   }).join('');
+
   Q('#hcOld').textContent=shown[0]?shown[0].date.slice(5):'';
-  const sd=days[selDay]||days[0];
+
+  // Detailansicht des gewählten Tages
+  if(selDay>=days.length)selDay=0;
+  const sd=days[selDay];
   if(sd){
-    const fmtDate=s=>{const d=new Date(s+'T12:00:00');return d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});};
+    const fmtDate=s=>{
+      const d=new Date(s+'T12:00:00');
+      return d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+    };
     Q('#ddDate').textContent=fmtDate(sd.date)+(selDay===0?' (Heute)':'');
     const sorted=[...days].sort((a,b)=>b.km-a.km);
     const rank=sorted.findIndex(d=>d.date===sd.date)+1;
     const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'#'+rank;
+    const avgM=sd.runs>0?Math.round(sd.km/sd.runs*1000):0;
     Q('#ddGrid').innerHTML=`
       <div class="dds"><div class="dl">Distanz</div><div class="dv" style="color:var(--a)">${sd.km.toFixed(3)}<span style="font-size:.7rem;color:var(--mu)"> km</span></div></div>
       <div class="dds"><div class="dl">Läufe</div><div class="dv">${sd.runs}</div></div>
-      <div class="dds"><div class="dl">Ø pro Lauf</div><div class="dv" style="font-size:1.2rem">${sd.runs>0?Math.round(sd.km/sd.runs*1000):0}<span style="font-size:.7rem;color:var(--mu)"> m</span></div></div>
+      <div class="dds"><div class="dl">Ø pro Lauf</div><div class="dv" style="font-size:1.2rem">${avgM}<span style="font-size:.7rem;color:var(--mu)"> m</span></div></div>
       <div class="dds"><div class="dl">Tages-Rang</div><div class="dv" style="font-size:1.3rem">${medal}</div></div>`;
   }
+
+  // Sortierte Liste nach km
   const sorted=[...days].sort((a,b)=>b.km-a.km);
   Q('#histList').innerHTML=sorted.slice(0,30).map((d,i)=>{
     const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
-    const fmtS=s=>{const dd=new Date(s+'T12:00:00');return dd.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});};
-    return`<div class="hlr" onclick="selDay=${days.findIndex(x=>x.date===d.date)};renderHistory()">
+    const fmtS=s=>{
+      const dd=new Date(s+'T12:00:00');
+      return dd.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+    };
+    const origIdx=days.findIndex(x=>x.date===d.date);
+    return`<div class="hlr" onclick="selDay=${origIdx};renderHistory()">
       <div class="hlrank">${m}</div>
       <div class="hld"><div class="hldd">${fmtS(d.date)}</div><div class="hlsub">${d.runs} Läufe</div></div>
       <div class="hlkm">${d.km.toFixed(3)}<span> km</span></div></div>`;
