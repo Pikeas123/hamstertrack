@@ -146,7 +146,7 @@ input[type=range]{accent-color:var(--o);width:80px;}
       <circle cx="95" cy="95" r="85" class="rb"/>
       <circle cx="95" cy="95" r="85" class="rf" id="sring"/>
     </svg>
-    <div class="rc"><div class="re" id="re">💤</div><div class="rv" id="rv">0.0</div><div class="ru">km/h</div></div>
+    <div class="rc"><div class="re" id="re">💤</div><div class="rv" id="rv">0.000</div><div class="ru">km heute</div></div>
   </div>
   <div class="rs" id="rs">Hamster schläft…</div>
 </div>
@@ -156,7 +156,7 @@ input[type=range]{accent-color:var(--o);width:80px;}
   <div class="csub">km seit Inbetriebnahme</div>
 </div>
 <div class="g2">
-  <div class="card co2"><div class="clb">Heute</div><div class="cv" id="todayKm">0.000</div><div class="csub">Kilometer</div><div class="ci">🏃</div></div>
+  <div class="card co2"><div class="clb">Max. Geschw.</div><div class="cv" id="todayKm">0.0</div><div class="csub">km/h Höchstwert</div><div class="ci">⚡</div></div>
   <div class="card cb"><div class="clb">Max. RPM</div><div class="cv" id="rpm">0</div><div class="csub">Höchstwert heute</div><div class="ci">🔄</div></div>
 </div>
 <div class="g2">
@@ -461,14 +461,23 @@ function renderAll(){renderLive();renderHistory();renderRecords();}
 function renderLive(){
   const offline = !ST.useReal;
 
-  // Ring — im Offline-Modus grau und leer
-  Q('#sring').style.strokeDashoffset = offline ? 534 : 534 - Math.min(1,ST.speed/5)*534;
+  // Ring: unter 1km → skaliert auf 1000m, darüber → skaliert auf 5km
+  const ringPct = ST.todayKm < 1
+    ? Math.min(1, ST.todayKm / 1)       // 0–1km = 0–100%
+    : Math.min(1, ST.todayKm / 5);      // 1–5km = 20–100%
+  Q('#sring').style.strokeDashoffset = offline ? 534 : 534 - ringPct * 534;
   Q('#sring').style.stroke = offline ? '#252530' : 'url(#rg)';
-  Q('#rv').textContent  = offline ? '—' : ST.speed.toFixed(1);
+  const distDisplay = ST.todayKm < 1
+    ? Math.round(ST.todayKm * 1000) + ' m'
+    : ST.todayKm.toFixed(3) + ' km';
+  Q('#rv').textContent  = offline ? '—' : (ST.todayKm < 1 ? Math.round(ST.todayKm * 1000) : ST.todayKm.toFixed(3));
   Q('#re').textContent  = offline ? '📵' : (ST.running ? '🐹' : '💤');
+  // Update ring unit label
+  const ruEl = document.querySelector('.ru');
+  if(ruEl) ruEl.textContent = (!offline && ST.todayKm < 1) ? 'm heute' : 'km heute';
   Q('#rs').textContent  = offline
     ? (ST.cachedAt ? 'Zuletzt: ' + ST.cachedAt : 'Kein ESP32 erreichbar')
-    : (ST.running ? 'Läuft · '+ST.rpm+' RPM' : 'Hamster schläft…');
+    : (ST.running ? 'Läuft · ' + ST.speed.toFixed(1) + ' km/h' : 'Hamster schläft…');
 
   // Offline-Banner über die Karten
   let banner = Q('#offlineBanner');
@@ -490,7 +499,7 @@ function renderLive(){
   // Werte — im Offline-Modus gedimmt wenn kein Cache vorhanden
   const noCache = offline && !ST.cachedAt;
   Q('#totalKm').textContent = noCache ? '—' : ST.totalKm.toFixed(3);
-  Q('#todayKm').textContent = noCache ? '—' : ST.todayKm.toFixed(3);
+  Q('#todayKm').textContent = noCache ? '—' : ST.topSpeed.toFixed(1);
   Q('#rpm').textContent     = offline ? '—' : ST.topRpm;
   Q('#runs').textContent    = noCache ? '—' : ST.runs;
   const totalMin = Math.floor(ST.activeSec / 60);
