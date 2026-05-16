@@ -155,9 +155,8 @@ input[type=range]{accent-color:var(--o);width:80px;}
   <div class="cv" id="totalKm">0.000</div>
   <div class="csub">km seit Inbetriebnahme</div>
 </div>
-<div class="g2">
-  <div class="card co2"><div class="clb">Max. Geschw.</div><div class="cv" id="todayKm">0.0</div><div class="csub">km/h Höchstwert</div><div class="ci">⚡</div></div>
-  <div class="card cb"><div class="clb">Max. RPM</div><div class="cv" id="rpm">0</div><div class="csub">Höchstwert heute</div><div class="ci">🔄</div></div>
+<div style="margin-bottom:9px;">
+  <div class="card co2"><div class="clb">Max. Geschw.</div><div class="cv" id="todayKm">0.0</div><div class="csub">km/h Höchstwert heute</div><div class="ci">⚡</div></div>
 </div>
 <div class="g2">
   <div class="card cg"><div class="clb">Läufe heute</div><div class="cv" id="runs">0</div><div class="csub">Pause &gt;2 min</div><div class="ci">📍</div></div>
@@ -198,11 +197,9 @@ input[type=range]{accent-color:var(--o);width:80px;}
 <!-- RECORDS -->
 <div class="page" id="pg-records">
 <div class="ph">🏆 Rekorde</div>
-<div class="recc"><div class="recm">🥇</div><div class="reci"><h3>Bester Tag</h3><p>Weiteste Strecke an einem Tag</p></div><div class="recn"><div class="rn" id="recBest">—</div><div class="rnu">km</div></div></div>
-<div class="recc"><div class="recm">⚡</div><div class="reci"><h3>Höchste Geschwindigkeit</h3><p>Allzeit-Rekord km/h</p></div><div class="recn"><div class="rn" id="recSpd">0.0</div><div class="rnu">km/h</div></div></div>
-<div class="recc"><div class="recm">🔄</div><div class="reci"><h3>Maximale RPM</h3><p>Umdrehungen pro Minute</p></div><div class="recn"><div class="rn" id="recRpm">0</div><div class="rnu">rpm</div></div></div>
+<div class="recc"><div class="recm">🥇</div><div class="reci"><h3>Bester Tag</h3><p id="recBestDate">—</p></div><div class="recn"><div class="rn" id="recBest">—</div><div class="rnu">km</div></div></div>
 <div class="recc"><div class="recm">🌍</div><div class="reci"><h3>Gesamtdistanz</h3><p>Seit Inbetriebnahme</p></div><div class="recn"><div class="rn" id="recTot">0.00</div><div class="rnu">km</div></div></div>
-<div class="recc"><div class="recm">📅</div><div class="reci"><h3>Gespeicherte Tage</h3><p>Historien-Einträge total</p></div><div class="recn"><div class="rn" id="recDays">0</div><div class="rnu">Tage</div></div></div>
+<div class="recc"><div class="recm">🗓</div><div class="reci"><h3>Gespeicherte Tage</h3><p>Historien-Einträge total</p></div><div class="recn"><div class="rn" id="recDays">0</div><div class="rnu">Tage</div></div></div>
 </div>
 
 <!-- SETTINGS -->
@@ -500,7 +497,6 @@ function renderLive(){
   const noCache = offline && !ST.cachedAt;
   Q('#totalKm').textContent = noCache ? '—' : ST.totalKm.toFixed(3);
   Q('#todayKm').textContent = noCache ? '—' : ST.topSpeed.toFixed(1);
-  Q('#rpm').textContent     = offline ? '—' : ST.topRpm;
   Q('#runs').textContent    = noCache ? '—' : ST.runs;
   const totalMin = Math.floor(ST.activeSec / 60);
   const hh = Math.floor(totalMin / 60);
@@ -598,12 +594,15 @@ function renderHistory(){
 }
 
 function renderRecords(){
-  Q('#recSpd').textContent=ST.topSpeed.toFixed(1);
-  Q('#recRpm').textContent=ST.topRpm;
-  Q('#recTot').textContent=ST.totalKm.toFixed(2);
-  Q('#recDays').textContent=ST.history.length;
-  const best=ST.history.length?Math.max(...ST.history.map(d=>d.km)):0;
-  Q('#recBest').textContent=best.toFixed(3);
+  const days = ST.history;
+  Q('#recTot').textContent  = ST.totalKm.toFixed(2);
+  Q('#recDays').textContent = days.length;
+  if (!days.length) return;
+  const best = [...days].sort((a,b) => b.km - a.km)[0];
+  Q('#recBest').textContent = best.km.toFixed(3);
+  const bestD = new Date(best.date + 'T12:00:00');
+  Q('#recBestDate').textContent = bestD.toLocaleDateString('de-DE',
+    {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
 }
 
 function goTab(id,el){
